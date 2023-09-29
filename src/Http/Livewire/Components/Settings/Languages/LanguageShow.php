@@ -2,7 +2,6 @@
 
 namespace Lunar\Hub\Http\Livewire\Components\Settings\Languages;
 
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Lunar\Hub\Http\Livewire\Traits\Notifies;
 use Lunar\Models\Language;
@@ -13,8 +12,6 @@ class LanguageShow extends Component
 
     /**
      * The current language we're showing.
-     *
-     * @var \Lunar\Models\Language
      */
     public Language $language;
 

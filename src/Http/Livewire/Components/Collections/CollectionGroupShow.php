@@ -3,24 +3,23 @@
 namespace Lunar\Hub\Http\Livewire\Components\Collections;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Lunar\Facades\DB;
 use Lunar\FieldTypes\TranslatedText;
 use Lunar\Hub\Http\Livewire\Traits\MapsCollectionTree;
 use Lunar\Hub\Http\Livewire\Traits\Notifies;
+use Lunar\Models\Attribute;
 use Lunar\Models\Collection;
 use Lunar\Models\CollectionGroup;
 use Lunar\Models\Language;
 
 class CollectionGroupShow extends Component
 {
-    use Notifies, MapsCollectionTree;
+    use MapsCollectionTree, Notifies;
 
     /**
      * The current collection group.
-     *
-     * @var CollectionGroup
      */
     public CollectionGroup $group;
 
@@ -33,15 +32,11 @@ class CollectionGroupShow extends Component
 
     /**
      * Show confirmation if we want to delete the group.
-     *
-     * @var bool
      */
     public bool $showDeleteConfirm = false;
 
     /**
      * Failsafe confirmation in order to delete the collection group.
-     *
-     * @var bool
      */
     public bool $deletionConfirm = false;
 
@@ -407,12 +402,22 @@ class CollectionGroupShow extends Component
             'collection.name.required' => __('adminhub::validation.generic_required'),
         ]);
 
+        $attribute = Attribute::whereHandle('name')->whereAttributeType(Collection::class)->first();
+
+        $attributeType = $attribute?->type ?: TranslatedText::class;
+
+        $name = $this->collection['name'];
+
+        if ($attributeType == TranslatedText::class) {
+            $name = [
+                $this->defaultLanguage => $this->collection['name'],
+            ];
+        }
+
         $collection = Collection::create([
             'collection_group_id' => $this->group->id,
             'attribute_data' => collect([
-                'name' => new TranslatedText([
-                    $this->defaultLanguage => $this->collection['name'],
-                ]),
+                'name' => new $attributeType($name),
             ]),
         ], $this->collectionParent);
 

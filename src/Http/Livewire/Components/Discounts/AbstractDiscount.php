@@ -5,11 +5,11 @@ namespace Lunar\Hub\Http\Livewire\Components\Discounts;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Validator;
 use Livewire\Component;
+use Lunar\Facades\DB;
 use Lunar\Facades\Discounts;
-use Lunar\Hub\Editing\DiscountTypes;
+use Lunar\Hub\Base\DiscountTypesInterface;
 use Lunar\Hub\Http\Livewire\Traits\HasAvailability;
 use Lunar\Hub\Http\Livewire\Traits\Notifies;
 use Lunar\Hub\Http\Livewire\Traits\WithLanguages;
@@ -21,14 +21,12 @@ use Lunar\Models\Product;
 
 abstract class AbstractDiscount extends Component
 {
-    use WithLanguages;
-    use Notifies;
     use HasAvailability;
+    use Notifies;
+    use WithLanguages;
 
     /**
      * The instance of the discount.
-     *
-     * @var Discount
      */
     public Discount $discount;
 
@@ -45,7 +43,7 @@ abstract class AbstractDiscount extends Component
      * @var array
      */
     public Collection $selectedCollections;
-    
+
     /**
      * The products to restrict the coupon for.
      *
@@ -55,22 +53,16 @@ abstract class AbstractDiscount extends Component
 
     /**
      * The selected conditions
-     *
-     * @var array
      */
     public array $selectedConditions = [];
 
     /**
      * The selected rewards.
-     *
-     * @var array
      */
     public array $selectedRewards = [];
 
     /**
      * The current currency for editing
-     *
-     * @var Currency
      */
     public Currency $currency;
 
@@ -125,9 +117,6 @@ abstract class AbstractDiscount extends Component
                 return $this->mapProductToArray($limitation->purchasable);
             });
 
-        $this->selectedBrands = $this->discount->brands->map(fn ($brand) => $this->mapBrandToArray($brand)) ?? collect();
-        $this->selectedCollections = $this->discount->collections->map(fn ($collection) => $this->mapCollectionToArray($collection)) ?? collect();
-        
         $this->selectedConditions = $this->discount->purchasableConditions()
             ->wherePurchasableType(Product::class)
             ->pluck('purchasable_id')->values()->toArray();
@@ -187,13 +176,12 @@ abstract class AbstractDiscount extends Component
      */
     public function getDiscountComponent()
     {
-        return (new DiscountTypes)->getComponent($this->discount->type);
+        return app(DiscountTypesInterface::class)->getComponent($this->discount->type);
     }
 
     /**
      * Sync the discount data with what's provided.
      *
-     * @param  array  $data
      * @return void
      */
     public function syncDiscountData(array $data)
@@ -207,7 +195,6 @@ abstract class AbstractDiscount extends Component
     /**
      * Select brands given an array of IDs
      *
-     * @param  array  $ids
      * @return void
      */
     public function selectBrands(array $ids)
@@ -222,7 +209,6 @@ abstract class AbstractDiscount extends Component
     /**
      * Select collections given an array of IDs
      *
-     * @param  array  $ids
      * @return void
      */
     public function selectCollections(array $ids)
@@ -233,11 +219,10 @@ abstract class AbstractDiscount extends Component
             ? $this->selectedCollections->merge($selectedCollections)
             : $selectedCollections;
     }
-    
+
     /**
      * Select products given an array of IDs
      *
-     * @param  array  $ids
      * @return void
      */
     public function selectProducts(array $ids)
@@ -325,7 +310,7 @@ abstract class AbstractDiscount extends Component
     /**
      * Save the discount.
      *
-     * @return RedirectResponse
+     * @return RedirectResponse|void
      */
     public function save()
     {
@@ -344,6 +329,7 @@ abstract class AbstractDiscount extends Component
 
         DB::transaction(function () {
             $this->discount->max_uses = $this->discount->max_uses ?: null;
+            $this->discount->max_uses_per_user = $this->discount->max_uses_per_user ?: null;
             $this->discount->save();
 
             $this->discount->brands()->sync(
@@ -379,7 +365,7 @@ abstract class AbstractDiscount extends Component
                 $this->selectedCollections->pluck('id')->toArray()
 
             );
-            
+
             $this->discount->purchasableLimitations()
                 ->whereNotIn('purchasable_id', $this->selectedProducts->pluck('id'))
                 ->delete();
@@ -434,6 +420,7 @@ abstract class AbstractDiscount extends Component
                 'has_errors' => $this->errorBag->hasAny([
                     'minPrices.*.price',
                     'discount.max_uses',
+                    'discount.max_uses_per_user',
                 ]),
             ],
             [
@@ -488,7 +475,7 @@ abstract class AbstractDiscount extends Component
             'breadcrumb' => $collection->breadcrumb,
         ];
     }
-    
+
     /**
      * Return the data we need from a product
      *

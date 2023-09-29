@@ -3,8 +3,8 @@
 namespace Lunar\Hub\Http\Livewire\Components\Settings\Attributes;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Lunar\Facades\AttributeManifest;
+use Lunar\Facades\DB;
 use Lunar\Hub\Http\Livewire\Traits\Notifies;
 use Lunar\Hub\Http\Livewire\Traits\WithLanguages;
 use Lunar\Models\Attribute;
@@ -24,8 +24,6 @@ class AttributeShow extends AbstractAttribute
 
     /**
      * The sorted attribute groups.
-     *
-     * @var Collection
      */
     public Collection $sortedAttributeGroups;
 
@@ -177,7 +175,7 @@ class AttributeShow extends AbstractAttribute
     public function refreshGroups()
     {
         $this->sortedAttributeGroups = AttributeGroup::whereAttributableType($this->typeClass)
-        ->orderBy('position')->get();
+            ->orderBy('position')->get();
 
         $this->showGroupCreate = false;
     }
@@ -274,7 +272,8 @@ class AttributeShow extends AbstractAttribute
             return;
         }
         DB::transaction(function () {
-            DB::table(config('lunar.database.table_prefix').'attributables')
+            DB::connection(config('lunar.database.connection'))
+                ->table(config('lunar.database.table_prefix').'attributables')
                 ->whereIn(
                     'attribute_id',
                     $this->attributeGroupToDelete->attributes()->pluck('id')->toArray()
@@ -293,7 +292,8 @@ class AttributeShow extends AbstractAttribute
     public function deleteAttribute()
     {
         DB::transaction(function () {
-            DB::table(config('lunar.database.table_prefix').'attributables')
+            DB::connection(config('lunar.database.connection'))
+                ->table(config('lunar.database.table_prefix').'attributables')
                 ->where(
                     'attribute_id',
                     $this->attributeToDelete->id

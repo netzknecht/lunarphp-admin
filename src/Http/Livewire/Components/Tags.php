@@ -4,8 +4,8 @@ namespace Lunar\Hub\Http\Livewire\Components;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Lunar\Facades\DB;
 use Lunar\Hub\Http\Livewire\Traits\Notifies;
 use Lunar\Models\Tag;
 
@@ -22,15 +22,11 @@ class Tags extends Component
 
     /**
      * The model to associate tags to.
-     *
-     * @var Model
      */
     public Model $taggable;
 
     /**
      * The search term for showing relevant available tags.
-     *
-     * @var string|null
      */
     public ?string $searchTerm = null;
 
@@ -67,7 +63,7 @@ class Tags extends Component
             $databaseTags = Tag::whereIn('value', $this->tags)->get();
 
             $newTags = collect($this->tags)->filter(function ($value) use ($databaseTags) {
-                return !$databaseTags->pluck('value')->contains($value);
+                return ! $databaseTags->pluck('value')->contains($value);
             });
 
             $this->taggable->tags()->sync($databaseTags);
@@ -94,13 +90,14 @@ class Tags extends Component
     {
         $tagTable = (new Tag)->getTable();
 
-        if (!$this->searchTerm) {
+        if (! $this->searchTerm) {
             return collect();
         }
 
-        return DB::table(
-            config('lunar.database.table_prefix') . 'taggables'
-        )->join($tagTable, 'tag_id', '=', "{$tagTable}.id")
+        return DB::connection(config('lunar.database.connection'))
+            ->table(
+                config('lunar.database.table_prefix').'taggables'
+            )->join($tagTable, 'tag_id', '=', "{$tagTable}.id")
             ->whereTaggableType(
                 $this->taggable->getMorphClass()
             )
@@ -108,7 +105,7 @@ class Tags extends Component
             ->where('value', 'LIKE', "%{$this->searchTerm}%")
             ->pluck('value')
             ->filter(function ($value) {
-                return !in_array($value, $this->tags);
+                return ! in_array($value, $this->tags);
             });
     }
 

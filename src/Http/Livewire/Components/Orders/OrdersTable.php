@@ -3,7 +3,7 @@
 namespace Lunar\Hub\Http\Livewire\Components\Orders;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Lunar\Facades\DB;
 use Lunar\Hub\Http\Livewire\Traits\Notifies;
 use Lunar\Hub\Models\SavedSearch;
 use Lunar\Hub\Tables\Builders\OrdersTableBuilder;
@@ -83,18 +83,18 @@ class OrdersTable extends Table
             SelectFilter::make('tags')->options(function () {
                 $tagTable = (new Tag)->getTable();
 
-                $tags = DB::table(
-                    config('lunar.database.table_prefix').'taggables'
-                )->join($tagTable, 'tag_id', '=', "{$tagTable}.id")
-                ->whereTaggableType(Order::class)
-                ->distinct()
-                ->pluck('value')
-                ->map(function ($value) {
-                    return [
-                        'value' => $value,
-                        'label' => $value,
-                    ];
-                });
+                $tags = DB::connection(config('lunar.database.connection'))
+                    ->table(config('lunar.database.table_prefix').'taggables')
+                    ->join($tagTable, 'tag_id', '=', "{$tagTable}.id")
+                    ->whereTaggableType(Order::class)
+                    ->distinct()
+                    ->pluck('value')
+                    ->map(function ($value) {
+                        return [
+                            'value' => $value,
+                            'label' => $value,
+                        ];
+                    });
 
                 return collect([
                     null => 'None',
@@ -208,8 +208,6 @@ class OrdersTable extends Table
 
     /**
      * Return the saved searches available to the table.
-     *
-     * @return Collection
      */
     public function getSavedSearchesProperty(): Collection
     {

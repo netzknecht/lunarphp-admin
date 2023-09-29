@@ -22,8 +22,6 @@ class OrderStatus extends Component
 
     /**
      * The order to edit.
-     *
-     * @var Order
      */
     public Order $order;
 
@@ -36,15 +34,11 @@ class OrderStatus extends Component
 
     /**
      * The selected mailers to send.
-     *
-     * @var array
      */
     public array $selectedMailers = [];
 
     /**
      * The template we want to preview.
-     *
-     * @var string|null
      */
     public ?string $previewTemplate = null;
 
@@ -57,8 +51,6 @@ class OrderStatus extends Component
 
     /**
      * The email addresses to use for the mailers.
-     *
-     * @var array
      */
     public array $emailAddresses = [];
 
@@ -71,8 +63,6 @@ class OrderStatus extends Component
 
     /**
      * The phone numbers to use for the notifications.
-     *
-     * @var array
      */
     public array $phoneNumbers = [];
 
@@ -187,14 +177,14 @@ class OrderStatus extends Component
                 );
 
                 activity()
-                ->causedBy(auth()->user())
-                ->performedOn($this->order)
-                ->event('email-notification')
-                ->withProperties([
-                    'template' => $storedPath,
-                    'email' => $email,
-                    'mailer' => $mailer['name'],
-                ])->log('email-notification');
+                    ->causedBy(auth()->user())
+                    ->performedOn($this->order)
+                    ->event('email-notification')
+                    ->withProperties([
+                        'template' => $storedPath,
+                        'email' => $email,
+                        'mailer' => $mailer['name'],
+                    ])->log('email-notification');
             }
         }
 

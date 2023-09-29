@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'dashboard.top_timeframe' => 'Last :period days',
     'products.option-manager.add_btn' => 'Add new option',
     'products.option-manager.toggle_btn' => 'Toggle All',
     'products.product-selector.select_btn' => 'Select Options',
@@ -171,7 +172,7 @@ return [
     'brands.index.create_brand' => 'Create Brand',
     'brands.index.table_row_action_text' => 'Edit Brand',
     'brands.index.table_count_header_text' => 'Products Count',
-    'brands.choose_brand_default_option' => 'Choose brand',
+    'brands.choose_brand_default_option' => 'Unbranded',
     /**
      * Product Index.
      */

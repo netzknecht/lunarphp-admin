@@ -3,7 +3,6 @@
 namespace Lunar\Hub\Views\Components;
 
 use Illuminate\View\Component;
-use Lunar\Models\Language;
 
 class Errors extends Component
 {
@@ -23,8 +22,6 @@ class Errors extends Component
 
     /**
      * Determine whether error icon should be shown.
-     *
-     * @var bool
      */
     public bool $errorIcon = true;
 
